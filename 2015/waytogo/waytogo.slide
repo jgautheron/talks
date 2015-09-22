@@ -1,0 +1,250 @@
+The way to Go
+Gophers Katowice #1, September 28, 2015
+
+Jonathan Gautheron
+Gopher at Nexway Lab
+@jgautheron
+https://medium.com/@jgautheron
+
+* About me
+
+Past and current works:
+
+- microservices
+- cli tools
+- gocha
+- unexport
+- go-boilerplates
+
+.image http://golang.org/doc/gopher/gopherbw.png 200 _
+
+* Frameworks
+
+* Nope
+
+.image youtellinme.jpg 500 _
+
+* Definition
+
+From Wikipedia:
+
+    “A software framework is a universal, reusable software environment that provides particular
+      functionality as part of a larger software platform to facilitate development of software
+      applications, products and solutions.”
+
+* Frameworks:
+
+- lock,
+- constrain,
+- add overheard,
+- complexify,
+- and are most of the time, not needed.
+
+Only adopt heavy-duty frameworks when it becomes necessary.
+Instead, you will find that a lot is already built-in the stdlib.
+
+Examples:
+
+- `net/http` - provides HTTP client and server implementations
+- `flag` - implements command-line flag parsing
+
+* Libraries
+
+Use libraries instead of pulling a ton of other things that you don't need.
+They focus on solving a specific problem, you can switch them easily.
+
+Example of libraries used for a classic web app:
+
+- `httprouter` - A high performance HTTP request router that scales well
+- `Negroni` - Idiomatic HTTP Middleware
+- `Render` - Easy rendering for JSON, XML, and HTML
+
+#Most likely after a while you'll prepare a boilerplate for faster developer onboarding and standardisation.
+
+* Configuration
+
+* config.xml
+
+.code config.xml
+
+* Nope
+
+.image settingsdawg.jpg 500 _
+
+* Keep it stateless
+
+Aim for no config file *at*all*.
+
+Differences between environments?
+Use environment variables (12-factor-ish).
+
+    DB_HOST=db.local CACHE_HOST=cache.local myapp
+
+Specific settings for a customer?
+Stamp those into the build.
+
+    go build -ldflags '\
+        -X "main.bgColor=f4f4f4" \
+        -X "main.logo=http://foo.com/logo.png" \
+        ' -o myapp-customer
+
+* Testing
+
+* Packages
+
+Most tests will be located in a `mypackage_test.go`, using the package:
+
+    // mypackage_test.go
+    package mypackage_test
+
+This is because you want your test to behave as if they were a client of the package you're using.
+
+For testing private members, follow the convention:
+
+    // mypackage_internal_test.go
+    package mypackage
+
+* Table-driven tests
+
+.code tabletests.go
+
+* Benchmarks
+
+.code benchmark.go
+
+`Bench*` functions won't be executed with a regular `go`test`.
+
+Run the benchmark methods with the following:
+
+    go test -bench -v .
+
+* Documentation
+
+* Godoc... or not
+
+    /**
+     * Receive notification of the end of a document.
+     */
+    EndDocument()
+
+    /**
+     * Begin the scope of a prefix-URI Namespace mapping.
+     *
+     * @param prefix
+     *            the Namespace prefix being declared. An empty string is used
+     *            for the default element namespace, which has no prefix.
+     * @param uri
+     *            the Namespace URI the prefix is mapped to
+     */
+    StartPrefixMapping(prefix, uri string)
+
+* Comments
+
+`golint` will constantly complain if you don't write comments for exported methods.
+
+    // Package message wraps the commit message style logic.
+    package message
+
+    const (
+        NA messageType = iota
+        Chore
+        Test
+    )
+
+    type MessageGroup struct {
+        Type, Scope string
+    }
+
+`golint` output:
+
+    message.go:28:2:warning: comment on exported const NA should be of the form "NA ..." (golint)
+    message.go:30:2:warning: exported const Chore should have comment (or a comment on this block) or be unexported (golint)
+    message.go:39:6:warning: exported type MessageGroup should have comment or be unexported (golint)
+
+.link https://godoc.org/github.com/fluhus/godoc-tricks godoc-tricks
+
+* Linters
+
+* Focus
+
+    “Spare your brain power for what really needs your attention,
+      scripts are good at repetition, you are not.”
+      — Me, probably
+
+
+* Shortlist
+
+- *go*vet* - Reports potential errors that otherwise compile
+- *go*vet*--shadow* - Reports variables that may have been unintentionally shadowed
+- *gotype* - Syntactic and semantic analysis similar to the Go compiler
+- *deadcode* - Finds unused code
+- *gocyclo* - Computes the cyclomatic complexity of functions
+- *golint* - Google's (mostly stylistic) linter
+- *defercheck* - Checks for duplicate defer calls
+- *varcheck* - Find unused global variables and constants
+- *structcheck* - Find unused struct fields
+- *errcheck* - Check that error return values are used
+- *dupl* - Reports potentially duplicated code
+
+* gometalinter
+
+It concurrently runs the aforementioned linters and normalises their output to a standard format.
+
+    $ go get github.com/alecthomas/gometalinter
+    $ gometalinter --install --update
+
+Output sample:
+
+    stutter.go:8:1:warning: unusedGlobal is unused (deadcode)
+    stutter.go:20:1:warning: duplicateDefer is unused (deadcode)
+    stutter.go:25:1:warning: stuff is unused (deadcode)
+    stutter.go:33:1:warning: do is unused (deadcode)
+    stutter.go:42:1:warning: testVetShadow is unused (deadcode)
+    stutter.go:45:3:error: foo declared but not used (gotype)
+    stutter.go:36:3:warning: Shadowing variable `a` (go-nyet)
+    stutter.go:45:3:warning: Shadowing variable `foo` (go-nyet)
+    stutter.go:12:6:warning: exported type MyStruct should have comment or be unexported (golint)
+    stutter.go:16:6:warning: exported type PublicUndocumented should have comment or be unexported (golint)
+    ./stutter.go:30::error: unreachable code (vet)
+    ./stutter.go:27::error: missing argument for Printf("%d"): format reads arg 1, have only 0 args (vet)
+
+* Checklist
+
+* Go Check List
+
+Like the 10 commandments excepted there are 30.
+
+.link https://github.com/matttproud/gochecklist matttproud/gochecklist
+
+.image hebrewsit.jpg 430 _
+
+* Makefile
+
+* Facade
+
+Use it if you can.
+Well-known facade in front of common build actions.
+
+Recommended targets:
+
+    make build
+    make buildall
+    make check
+    make image
+    make test
+
+Not cross-platform (Windows, looking at you!).
+
+* make check
+
+    # Run several automated source checks to get rid of the most simple issues.
+    # This helps keeping code review focused on application logic.
+    .PHONY: check
+    check:
+      @echo "gometalinter"
+      @! gometalinter ./... | \
+        grep -vE '(categories\.go|defer)'
+      @echo "gofmt"
+      @! gofmt -s -d -l . 2>&1 | grep -vE '^\.git/'
+      @echo "goimports"
+      @! goimports -l . | grep -vF 'No Exceptions'
