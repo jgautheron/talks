@@ -123,11 +123,6 @@ Run the benchmark methods with the following:
 * Godoc... or not
 
     /**
-     * Receive notification of the end of a document.
-     */
-    EndDocument()
-
-    /**
      * Begin the scope of a prefix-URI Namespace mapping.
      *
      * @param prefix
@@ -137,6 +132,8 @@ Run the benchmark methods with the following:
      *            the Namespace URI the prefix is mapped to
      */
     StartPrefixMapping(prefix, uri string)
+
+.image ohnoes.jpg 300 _
 
 * Comments
 
