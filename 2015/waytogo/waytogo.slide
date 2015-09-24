@@ -36,9 +36,9 @@ From Wikipedia:
 
 - lock,
 - constrain,
-- add overheard,
+- add overhead,
 - complexify,
-- and are most of the time, not needed.
+- and most of the time, are not needed.
 
 Only adopt heavy-duty frameworks when it becomes necessary.
 Instead, you will find that a lot is already built-in the stdlib.
@@ -120,7 +120,7 @@ Run the benchmark methods with the following:
 
 * Documentation
 
-* Godoc... or not
+* Godoc... or not?!
 
     /**
      * Begin the scope of a prefix-URI Namespace mapping.
@@ -135,28 +135,29 @@ Run the benchmark methods with the following:
 
 .image ohnoes.jpg 300 _
 
-* Comments
-
-`golint` will constantly complain if you don't write comments for exported methods.
+* Natural language
 
     // Package message wraps the commit message style logic.
+    //
+    // For now only the AngularJS convention is implemented.
+    // Read more about it here:
+    // https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit
     package message
 
     const (
+        // NA is the default when the type cannot be resolved.
         NA messageType = iota
+        // Chore regroups maintenance-related tasks.
         Chore
+        // Test regroups testing-related tasks.
         Test
     )
 
-    type MessageGroup struct {
-        Type, Scope string
+    // GetMessageGroup analyses the given commits, and returns a list of
+    // properly deconstructed messages for the current convention.
+    func GetMessageGroup(cmts []repository.Commit) (map[string]map[string][]Message, error) {
+        // ...
     }
-
-`golint` output:
-
-    message.go:28:2:warning: comment on exported const NA should be of the form "NA ..." (golint)
-    message.go:30:2:warning: exported const Chore should have comment (or a comment on this block) or be unexported (golint)
-    message.go:39:6:warning: exported type MessageGroup should have comment or be unexported (golint)
 
 .link https://godoc.org/github.com/fluhus/godoc-tricks godoc-tricks
 
@@ -207,13 +208,40 @@ Output sample:
 
 * Checklist
 
-* Go Check List
+* gochecklist
 
 Like the 10 commandments excepted there are 30.
 
 .link https://github.com/matttproud/gochecklist matttproud/gochecklist
 
 .image hebrewsit.jpg 430 _
+
+* Seriously
+
+The project gathers various conventions and practices around publishing Go projects in one place, splitted in 3 categories: *Minimum*Criteria*, *Good*Citizen* and *Extra*Credit*.
+
+*Minimum*Criteria*
+
+- Does the project build?
+- Does the code pass format, lint and error checking tools?
+- Does the project's documentation instruct how to build the project?
+- Does each `package`<pkg>` statement's package name match the containing directory name?
+- Does the project's godoc work correctly?
+- Are any private or internal types accidentally exported? Are all the types one needs to use the project correctly exported?
+
+* Next
+
+*Good*Citizen*
+
+- Is a process documented for how and where to report problems?
+- Does the project vendor its dependencies in some fashion? Bonus points for low-tech. solutions to this.
+- Does the project avoid unnecessarily using external packages when the first-party suffice?
+
+*Extra*Credit*
+
+- Does the project's document actively reference existing solutions or implementation and offer to compare itself with them?
+- Does the project offer a formal roadmap?
+- In addition to standard tests, does the project have blackbox tests?
 
 * Makefile
 
