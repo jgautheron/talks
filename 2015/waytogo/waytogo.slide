@@ -206,43 +206,6 @@ Output sample:
     ./stutter.go:30::error: unreachable code (vet)
     ./stutter.go:27::error: missing argument for Printf("%d"): format reads arg 1, have only 0 args (vet)
 
-* Checklist
-
-* gochecklist
-
-Like the 10 commandments excepted there are 30.
-
-.link https://github.com/matttproud/gochecklist matttproud/gochecklist
-
-.image hebrewsit.jpg 430 _
-
-* Seriously
-
-The project gathers various conventions and practices around publishing Go projects in one place, splitted in 3 categories: *Minimum*Criteria*, *Good*Citizen* and *Extra*Credit*.
-
-*Minimum*Criteria*
-
-- Does the project build?
-- Does the code pass format, lint and error checking tools?
-- Does the project's documentation instruct how to build the project?
-- Does each `package`<pkg>` statement's package name match the containing directory name?
-- Does the project's godoc work correctly?
-- Are any private or internal types accidentally exported? Are all the types one needs to use the project correctly exported?
-
-* Next
-
-*Good*Citizen*
-
-- Is a process documented for how and where to report problems?
-- Does the project vendor its dependencies in some fashion? Bonus points for low-tech. solutions to this.
-- Does the project avoid unnecessarily using external packages when the first-party suffice?
-
-*Extra*Credit*
-
-- Does the project's document actively reference existing solutions or implementation and offer to compare itself with them?
-- Does the project offer a formal roadmap?
-- In addition to standard tests, does the project have blackbox tests?
-
 * Makefile
 
 * Facade
@@ -273,3 +236,67 @@ Not cross-platform (Windows, looking at you!).
       @! gofmt -s -d -l . 2>&1 | grep -vE '^\.git/'
       @echo "goimports"
       @! goimports -l . | grep -vF 'No Exceptions'
+
+* Data Embedding
+
+* Containerization
+
+Embed your application assets *in* the binary.
+
+Possible usages:
+
+- HTTP assets (images, CSS, JS)
+- Templates
+- Configuration
+- Dataset
+
+* Asset embedding
+
+Pros
+
+- Simplifies
+- Limits liabilities
+- Eases deployment
+- Possible to browse files through HTTP
+
+Cons
+
+- Loaded in memory
+- Increases the binary weight
+- Raises slightly the complexity
+
+* Checklist
+
+* gochecklist
+
+Like the 10 commandments excepted there are 30.
+
+.link https://github.com/matttproud/gochecklist matttproud/gochecklist
+
+.image hebrewsit.jpg 430 _
+
+* Seriously
+
+The project gathers various conventions and practices around publishing Go projects in one place, splitted in 3 categories: *Minimum*Criteria*, *Good*Citizen* and *Extra*Credit*.
+
+*Minimum*Criteria*
+
+- Does the project build?
+- Does the code pass format, lint and error checking tools?
+- Does the project's documentation instruct how to build the project?
+- Does each `package`<pkg>` statement's package name match the containing directory name?
+- Does the project's godoc work correctly?
+
+* Next
+
+*Good*Citizen*
+
+- Is a process documented for how and where to report problems?
+- Does the project vendor its dependencies in some fashion? Bonus points for low-tech. solutions to this.
+- Does the project avoid unnecessarily using external packages when the first-party suffice?
+
+*Extra*Credit*
+
+- Does the project's document actively reference existing solutions or implementation and offer to compare itself with them?
+- Does the project offer a formal roadmap?
+- In addition to standard tests, does the project have blackbox tests?
