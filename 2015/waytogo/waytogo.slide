@@ -18,6 +18,11 @@ Past and current works:
 
 .image http://golang.org/doc/gopher/gopherbw.png 200 _
 
+* 
+
+.image noidea.jpg 550 _
+.caption A manual always comes in handy
+
 * Frameworks
 
 * Nope
@@ -163,12 +168,9 @@ Run the benchmark methods with the following:
 
 * Linters
 
-* Focus
+* 
 
-    “Spare your brain power for what really needs your attention,
-      scripts are good at repetition, you are not.”
-      — Me, probably
-
+.image brainpower.png 600 _
 
 * Shortlist
 
