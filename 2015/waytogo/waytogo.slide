@@ -64,8 +64,6 @@ Example of libraries used for a classic web app:
 - `Negroni` - Idiomatic HTTP Middleware
 - `Render` - Easy rendering for JSON, XML, and HTML
 
-#Most likely after a while you'll prepare a boilerplate for faster developer onboarding and standardisation.
-
 * Configuration
 
 * config.xml
@@ -174,17 +172,18 @@ Run the benchmark methods with the following:
 
 * Shortlist
 
-- *go*vet* - Reports potential errors that otherwise compile
-- *go*vet*--shadow* - Reports variables that may have been unintentionally shadowed
-- *gotype* - Syntactic and semantic analysis similar to the Go compiler
-- *deadcode* - Finds unused code
-- *gocyclo* - Computes the cyclomatic complexity of functions
-- *golint* - Google's (mostly stylistic) linter
-- *defercheck* - Checks for duplicate defer calls
-- *varcheck* - Find unused global variables and constants
-- *structcheck* - Find unused struct fields
-- *errcheck* - Check that error return values are used
-- *dupl* - Reports potentially duplicated code
+- *go*vet* - Reports potential errors that otherwise compile.
+- *go*vet*--shadow* - Reports variables that may have been unintentionally shadowed.
+- *gotype* - Syntactic and semantic analysis similar to the Go compiler.
+- *deadcode* - Finds unused code.
+- *gocyclo* - Computes the cyclomatic complexity of functions.
+- *golint* - Google's (mostly stylistic) linter.
+- *defercheck* - Checks for duplicate defer calls.
+- *varcheck* - Find unused global variables and constants.
+- *structcheck* - Find unused struct fields.
+- *errcheck* - Check that error return values are used.
+- *dupl* - Reports potentially duplicated code.
+- *ineffassign* - Detect when assignments to existing variables are not used.
 
 * gometalinter
 
@@ -213,7 +212,7 @@ Output sample:
 * Facade
 
 Use it if you can.
-Well-known facade in front of common build actions.
+Exposes a well-known facade in front of common build actions.
 
 Recommended targets:
 
@@ -232,16 +231,15 @@ Not cross-platform (Windows, looking at you!).
     .PHONY: check
     check:
       @echo "gometalinter"
-      @! gometalinter ./... | \
-        grep -vE '(categories\.go|defer)'
+      @ gometalinter ./...
       @echo "gofmt"
       @! gofmt -s -d -l . 2>&1 | grep -vE '^\.git/'
       @echo "goimports"
       @! goimports -l . | grep -vF 'No Exceptions'
 
-* Data Embedding
+* Asset Embedding
 
-* Containerization
+* 
 
 Embed your application assets *in* the binary.
 
@@ -252,7 +250,7 @@ Possible usages:
 - Configuration
 - Dataset
 
-* Asset embedding
+* 
 
 Pros
 
@@ -269,7 +267,7 @@ Cons
 
 * Checklist
 
-* gochecklist
+* 
 
 Like the 10 commandments excepted there are 30.
 
@@ -277,7 +275,7 @@ Like the 10 commandments excepted there are 30.
 
 .image hebrewsit.jpg 430 _
 
-* Seriously
+* 
 
 The project gathers various conventions and practices around publishing Go projects in one place, splitted in 3 categories: *Minimum*Criteria*, *Good*Citizen* and *Extra*Credit*.
 
@@ -289,7 +287,7 @@ The project gathers various conventions and practices around publishing Go proje
 - Does each `package`<pkg>` statement's package name match the containing directory name?
 - Does the project's godoc work correctly?
 
-* Next
+* 
 
 *Good*Citizen*
 
@@ -302,3 +300,14 @@ The project gathers various conventions and practices around publishing Go proje
 - Does the project's document actively reference existing solutions or implementation and offer to compare itself with them?
 - Does the project offer a formal roadmap?
 - In addition to standard tests, does the project have blackbox tests?
+
+* Conclusion
+
+- Use libraries
+- Split configuration
+- Multiple levels for testing
+- Natural language powered documentation
+- Lint aggressively
+- Abstract build actions
+- Embed assets
+- About to release a project? Check the boxes
