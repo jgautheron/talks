@@ -170,7 +170,7 @@ Run the benchmark methods with the following:
 
 .image brainpower.png 600 _
 
-* Shortlist
+* 
 
 - *go*vet* - Reports potential errors that otherwise compile.
 - *go*vet*--shadow* - Reports variables that may have been unintentionally shadowed.
@@ -232,10 +232,6 @@ Not cross-platform (Windows, looking at you!).
     check:
       @echo "gometalinter"
       @ gometalinter ./...
-      @echo "gofmt"
-      @! gofmt -s -d -l . 2>&1 | grep -vE '^\.git/'
-      @echo "goimports"
-      @! goimports -l . | grep -vF 'No Exceptions'
 
 * Asset Embedding
 
@@ -249,6 +245,8 @@ Possible usages:
 - Templates
 - Configuration
 - Dataset
+
+.link https://github.com/jteeuwen/go-bindata jteeuwen/go-bindata
 
 * 
 
