@@ -15,6 +15,7 @@ Past and current works:
 - gocha
 - unexport
 - go-boilerplates
+- gometalinter-ui
 
 .image http://golang.org/doc/gopher/gopherbw.png 200 _
 
@@ -28,14 +29,6 @@ Past and current works:
 * 
 
 .image youtellinme.jpg 550 _
-
-* Definition
-
-From Wikipedia:
-
-    “A software framework is a universal, reusable software environment that provides particular
-      functionality as part of a larger software platform to facilitate development of software
-      applications, products and solutions.”
 
 * Frameworks:
 
@@ -72,7 +65,7 @@ Example of libraries used for a classic web app:
 
 * 
 
-.image settingsdawg.jpg 550 _
+.image nein.jpg 550 _
 
 * Keep it stateless
 
@@ -163,6 +156,11 @@ Run the benchmark methods with the following:
     }
 
 .link https://godoc.org/github.com/fluhus/godoc-tricks godoc-tricks
+
+* 
+
+.image codecomments.jpg 550 _
+.caption Get creative!
 
 * Linters
 
@@ -270,7 +268,7 @@ Like the 10 commandments excepted there are 30.
 
 .link https://github.com/matttproud/gochecklist matttproud/gochecklist
 
-.image hebrewsit.jpg 430 _
+.image hebrewsit.jpg 470 _
 
 * 
 
@@ -300,11 +298,13 @@ The project gathers various conventions and practices around publishing Go proje
 
 * Conclusion
 
-- Use libraries
-- Split configuration
-- Multiple levels for testing
+- Prefer libraries to frameworks
+- Minimize and split configuration per type
+- Test everything
 - Natural language powered documentation
 - Lint aggressively
-- Abstract build actions
-- Embed assets
-- About to release a project? Check the boxes
+- Use a facade for build actions
+- Embed assets if relevant
+- About to release a project? 30 boxes to check
+
+.image 16.png 180 _
