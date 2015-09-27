@@ -25,9 +25,9 @@ Past and current works:
 
 * Frameworks
 
-* Nope
+* 
 
-.image youtellinme.jpg 500 _
+.image youtellinme.jpg 550 _
 
 * Definition
 
@@ -70,9 +70,9 @@ Example of libraries used for a classic web app:
 
 .code config.xml
 
-* Nope
+* 
 
-.image settingsdawg.jpg 500 _
+.image settingsdawg.jpg 550 _
 
 * Keep it stateless
 
@@ -241,7 +241,7 @@ Not cross-platform (Windows, looking at you!).
 
 * 
 
-Embed your application assets *in* the binary.
+Embed your application assets *inside* the binary.
 
 Possible usages:
 
@@ -252,14 +252,13 @@ Possible usages:
 
 * 
 
-Pros
+*Pros*
 
-- Simplifies
 - Limits liabilities
 - Eases deployment
 - Possible to browse files through HTTP
 
-Cons
+*Cons*
 
 - Loaded in memory
 - Increases the binary weight
