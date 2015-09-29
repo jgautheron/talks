@@ -100,13 +100,13 @@ For testing private members, follow the convention:
     // mypackage_internal_test.go
     package mypackage
 
-* Table-driven tests
-
-.code tabletests.go
-
 * Benchmarks
 
 .code benchmark.go
+
+* Table-driven tests
+
+.code tabletests.go
 
 `Bench*` functions won't be executed with a regular `go`test`.
 
