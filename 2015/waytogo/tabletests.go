@@ -2,14 +2,8 @@ var flagtests = []struct {
 	in  string
 	out string
 }{
-	{"%a", "[%a]"},
-	{"%-a", "[%-a]"},
-	{"%1.2a", "[%1.2a]"},
 	{"%-1.2a", "[%-1.2a]"},
 	{"%+1.2a", "[%+1.2a]"},
-	{"%-+1.2a", "[%+-1.2a]"},
-	{"%-+1.2abc", "[%+-1.2a]bc"},
-	{"%-1.2abc", "[%-1.2a]bc"},
 }
 
 func TestFlagParser(t *testing.T) {
