@@ -104,15 +104,15 @@ For testing private members, follow the convention:
 
 .code benchmark.go
 
-* Table-driven tests
-
-.code tabletests.go
-
 `Bench*` functions won't be executed with a regular `go`test`.
 
 Run the benchmark methods with the following:
 
     go test -bench -v .
+
+* Table-driven tests
+
+.code tabletests.go
 
 * Documentation
 
