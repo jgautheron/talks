@@ -1,0 +1,54 @@
+Minimalist containers
+Docker Katowice #1, October 13, 2015
+
+Jonathan Gautheron
+@jgautheron
+jgautheron@neverblend.in
+
+* About me
+
+Past and current works:
+
+- microservices
+- [[https://github.com/jgautheron/go][jgautheron/go]]
+- [[https://github.com/jgautheron/dockerfiles/tree/master/openresty][jgautheron/openresty]]
+- [[https://github.com/jgautheron/dockerfiles/tree/master/sublime-text-go][jgautheron/sublime-text-go]]
+- [[https://github.com/jgautheron/dockerfiles/tree/master/phpstorm][jgautheron/phpstorm]]
+- [[https://github.com/jgautheron/dockerfiles/tree/master/photoshop][jgautheron/photoshop]]
+
+.image whale.png 200 _
+
+* Minimalism
+
+* 
+.image st-exup.png 600 _
+
+* 
+Let's take a look at the definition.
+
+    A style or technique that is characterized by extreme spareness and simplicity.
+
+* Minimalist?
+.image arch.png 500 _
+.caption Not enough arrows?
+
+* Image cleanup
+
+* 
+After you're done, clean up the image to make sure it doesn't include software and libraries that you don't need.
+
+    FROM debian:jessie
+
+    RUN apt-get update -qq \
+        && apt-get install -yqq build-essential wget ca-certificates --no-install-recommends
+
+    RUN (wget -qO - https://github.com/pagespeed/ngx_pagespeed/archive/v${PAGESPEED_VERSION}.tar.gz | tar zxf - -C /tmp)
+    # ...
+
+    RUN rm -Rf /tmp/* \
+        && apt-get purge -yqq build-essential wget ca-certificates \
+        && apt-get autoremove -yqq \
+        && apt-get clean all
+
+* Base images
+
