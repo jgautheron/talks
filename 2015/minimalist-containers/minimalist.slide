@@ -9,7 +9,7 @@ jgautheron@neverblend.in
 
 Past and current works:
 
-- microservices
+- ☁ microservices
 - [[https://github.com/jgautheron/go][jgautheron/go]]
 - [[https://github.com/jgautheron/dockerfiles/tree/master/openresty][jgautheron/openresty]]
 - [[https://github.com/jgautheron/dockerfiles/tree/master/sublime-text-go][jgautheron/sublime-text-go]]
@@ -28,14 +28,14 @@ Let's take a look at the definition.
 
     A style or technique that is characterized by extreme spareness and simplicity.
 
-* Minimalist?
+* Simplicity?
 .image arch.png 500 _
 .caption Not enough arrows?
 
 * Image cleanup
 
 * 
-After you're done, clean up the image to make sure it doesn't include software and libraries that you don't need.
+After you're done, clean up the image to make sure it doesn't include software and libraries you don't need.
 
     FROM debian:jessie
 
@@ -52,3 +52,143 @@ After you're done, clean up the image to make sure it doesn't include software a
 
 * Base images
 
+    REPOSITORY          TAG                 IMAGE ID            VIRTUAL SIZE
+    ubuntu              trusty              a005e6b7dd01        188.4 MB
+    debian              jessie              58016a5acc80        125.2 MB
+    node                latest              a3157e9edc18        641.2 MB
+    google/golang       latest              dfde9d09338a        624.6 MB
+    ruby                latest              5029dc6f1b9e        717.9 MB
+    python              latest              575cb3ad9b67        685.8 MB
+    phusion/baseimage   latest              e9f50c1887ea        237.7 MB
+    alpine              latest              f4fddc471ec2        5.249 MB
+    tianon/true         latest              007e3524f438        125 B
+
+* 
+.image cat-in-a-box.jpg 550 _
+
+* Alpine Linux
+Alpine Linux is built around musl libc and busybox. This makes it smaller and more resource efficient than traditional GNU/Linux distributions.
+
+    / # apk -h
+
+      add       Add PACKAGEs to 'world' and install (or upgrade) them, while ensuring that all dependencies are met
+      del       Remove PACKAGEs from 'world' and uninstall them
+      fix       Repair package or upgrade it without modifying main dependencies
+      update    Update repository indexes from all remote repositories
+      info      Give detailed information about PACKAGEs or repositores
+      search    Search package by PATTERNs or by indexed dependencies
+      upgrade   Upgrade currently installed packages to match repositories
+      cache     Download missing PACKAGEs to cache and/or delete unneeded files from cache
+      version   Compare package versions (in installed database vs. available) or do tests on literal version strings
+      fetch     Download PACKAGEs from global repositories to a local directory
+
+.image alpine.png 50 _
+
+* 
+.link https://pkgs.alpinelinux.org/packages Alpine Packages
+.image alpinepkg.png
+
+* 
+.image whynotcompile.jpg 550 _
+
+* Scratch
+
+* Empty image - 0 B
+Since Docker 1.5.0, putting `FROM`scratch` in a `Dockerfile` is a `noop` and doesn’t add any layers to your container.
+
+Useful for:
+
+- data containers (database, source code...)
+- executable without dependencies
+
+⚠ But also a *reserved*keyword* for some services: quay.io, AWS Beanstalk.
+In those cases `tianon/true` will prove useful.
+
+* App Builders
+
+* 
+.image docker-in-docker.jpg 500 _
+
+* Why?
+
+- Reliable image creation process
+- Extract all your application dependencies
+- Do not pollute your filesystem with package managers
+- Smallest image possible (`scratch`)
+
+* How?
+.image app-builder.png
+
+* App Builder
+    docker run -v /var/run/docker.sock:/var/run/docker.sock \
+               -v $(which docker):$(which docker) \
+               -e FOO=BAR \
+               my/app-builder
+
+Steps
+
+1. *Clone* the project
+2. *Build* the dependencies — `foo`install`
+3. *Build* & *tag* the image — `docker`build`
+4. *Squash* the image
+5. *Log*in* your private registry — `docker`login`
+6. *Push* the image — `docker`push`
+
+* Squash
+
+* 
+Each command creates an additional layer.
+Layers convey history, but do you need *history*in*production*?
+
+.image layers.png _ 200
+
+* 
+
+Simple trick to reduce the amount of layers: *chain*commands*.
+
+    RUN rm -Rf /tmp/* \
+        && apt-get purge -yqq build-essential wget ca-certificates \
+        && apt-get autoremove -yqq \
+        && apt-get clean all
+
+Or, squash the layers into one.
+
+    $ docker run -dit my/image /bin/sh
+    2e1a368d45fd7cfb3c2bc0db806d968596a9369b4c9dbc719a87df58c9ab7bd9
+
+    $ docker export 2e1a368d45fd | docker import - my/image:flat
+    24352b081cecdaf45de19038cc9f94b2377dedd0f2d6977fef09272bc0501860
+
+    $ docker history 24352b081cec
+    IMAGE               CREATED             CREATED BY          SIZE                COMMENT
+    24352b081cec        8 seconds ago                           307.2 MB            Imported from -
+
+Best for CI workflows, no need to run the container: [[https://github.com/jwilder/docker-squash][jwilder/docker-squash]].
+
+* fanotify
+
+* 
+What if we recorded *all* file accesses, be it a stat or a open, to determine what is *REALLY* needed in the image?
+
+It's possible exploiting the fanotify syscall, intercept & log file access events.
+
+To cut it to the chase, using this method, the results were:
+
+    ubuntu      209M
+    ubuntu_lean 2.5M
+
+.link http://blog.yadutaf.fr/2015/04/25/how-i-shrunk-a-docker-image-by-98-8-featuring-fanotify/ How I shrunk a Docker image by 98.8% – featuring fanotify
+
+* Conclusion
+
+1. *Cleanup* the image
+
+2. Use the *smallest* base image
+
+3. Use *scratch* when applicable
+
+4. Use a *builder* if relevant
+
+5. *Chain* commands
+
+6. *Squash* the image
