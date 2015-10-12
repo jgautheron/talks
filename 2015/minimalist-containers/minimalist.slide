@@ -64,7 +64,8 @@ After you're done, clean up the image to make sure it doesn't include software a
     tianon/true         latest              007e3524f438        125 B
 
 * 
-.image cat-in-a-box.jpg 550 _
+.image marubox.jpg 550 _
+.caption Proportions matter
 
 * Alpine Linux
 Alpine Linux is built around musl libc and busybox. This makes it smaller and more resource efficient than traditional GNU/Linux distributions.
@@ -192,3 +193,5 @@ To cut it to the chase, using this method, the results were:
 5. *Chain* commands
 
 6. *Squash* the image
+
+.image marucape.jpg
