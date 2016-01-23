@@ -21,6 +21,11 @@ Two sides of a coin.
 - Overview of the [[https://docs.docker.com/engine/reference/builder/][Dockerfile syntax]]
 - Dockerize an entire [[https://github.com/jgautheron/Nodejs-Redis-TodoMVC][Todo-List App]]
 
+* 
+
+.image pizza.jpg 550 _
+.caption Pizza break around 3pm.
+
 * Installation
 Docker runs only natively on Linux, other OSes bridge your commands to a lightweight Linux VM.
 
