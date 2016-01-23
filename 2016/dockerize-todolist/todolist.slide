@@ -1,0 +1,64 @@
+Docker Workshop: To-Do List
+Docker Katowice #3, January 23, 2016
+
+Jonathan Gautheron
+Dawid Stysiak
+#docker @ KatoTech.slack.com
+
+* About us
+
+Two sides of a coin.
+
+- microservices
+- ☁ orchestration
+
+.image whale.png 200 _
+
+* What we will cover today
+
+- Introduction to [[https://docs.docker.com/engine/reference/commandline/cli/][Docker commands]]
+- Install [[https://docs.docker.com/engine/installation/][Docker]] & [[https://docs.docker.com/compose/install/][Docker Compose]]
+- Overview of the [[https://docs.docker.com/engine/reference/builder/][Dockerfile syntax]]
+- Dockerize an entire [[https://github.com/jgautheron/Nodejs-Redis-TodoMVC][Todo-List App]]
+
+* Installation
+Docker runs only natively on Linux, other OSes bridge your commands to a lightweight Linux VM.
+
+Instructions:
+
+- [[https://docs.docker.com/engine/installation/ubuntulinux/][Ubuntu]]
+- [[https://docs.docker.com/engine/installation/mac/][OSX]]
+- [[https://docs.docker.com/engine/installation/windows/][Windows]]
+
+* Commands
+
+- `docker`pull`
+- `docker`images`
+- `docker`run`
+- `docker`ps`
+- `docker`exec`
+- `docker`stop`
+- `docker`rm`
+- `docker`build`
+- `docker`push`
+
+*.dockerignore*: exclude the specified files when ADDing a directory.
+For instance: `.git`, `*.json`... (`.gitignore`-like syntax)
+
+* Dockerfile
+
+- `FROM`
+- `MAINTAINER`
+- `ENV`
+- `ADD`
+- `RUN`
+- `VOLUME`
+- `WORKDIR`
+- `EXPOSE`
+- `ENTRYPOINT`
+- `CMD`
+
+* On the next episode...
+
+- Docker Registry
+- Continuous Deployment Workflow
