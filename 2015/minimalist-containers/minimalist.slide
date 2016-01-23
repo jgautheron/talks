@@ -28,7 +28,7 @@ Let's take a look at the definition.
 
     A style or technique that is characterized by extreme spareness and simplicity.
 
-* Simplicity?
+* Simplicity nowadays
 .image arch.png 500 _
 .caption Not enough arrows?
 
@@ -50,8 +50,9 @@ After you're done, clean up the image to make sure it doesn't include software a
         && apt-get autoremove -yqq \
         && apt-get clean all
 
-* Base images
+* Base image
 
+* 
     REPOSITORY          TAG                 IMAGE ID            VIRTUAL SIZE
     ubuntu              trusty              a005e6b7dd01        188.4 MB
     debian              jessie              58016a5acc80        125.2 MB
@@ -110,7 +111,7 @@ In those cases `tianon/true` will prove useful.
 * 
 .image docker-in-docker.jpg 500 _
 
-* Why?
+* Why would you do that?
 
 - Reliable image creation process
 - Extract all your application dependencies
@@ -120,13 +121,7 @@ In those cases `tianon/true` will prove useful.
 * How?
 .image app-builder.png
 
-* App Builder
-    docker run -v /var/run/docker.sock:/var/run/docker.sock \
-               -v $(which docker):$(which docker) \
-               -e FOO=BAR \
-               my/app-builder
-
-Steps
+* Steps
 
 1. *Clone* the project
 2. *Build* the dependencies — `foo`install`
@@ -134,6 +129,13 @@ Steps
 4. *Squash* the image
 5. *Log*in* your private registry — `docker`login`
 6. *Push* the image — `docker`push`
+
+The builder will be started with the following command:
+
+    docker run -v /var/run/docker.sock:/var/run/docker.sock \
+               -v $(which docker):$(which docker) \
+               -e FOO=BAR \
+               my/app-builder
 
 * Squash
 
@@ -166,12 +168,12 @@ Or, squash the layers into one.
 
 Best for CI workflows, no need to run the container: [[https://github.com/jwilder/docker-squash][jwilder/docker-squash]].
 
-* fanotify
+* Bonus: fanotify
 
 * 
 What if we recorded *all* file accesses, be it a stat or a open, to determine what is *REALLY* needed in the image?
 
-It's possible exploiting the fanotify syscall, intercept & log file access events.
+It's possible exploiting the fanotify syscall, to intercept & log file access events.
 
 To cut it to the chase, using this method, the results were:
 
@@ -184,7 +186,7 @@ To cut it to the chase, using this method, the results were:
 
 1. *Cleanup* the image
 
-2. Use the *smallest* base image
+2. Use the *right* base image
 
 3. Use *scratch* when applicable
 
