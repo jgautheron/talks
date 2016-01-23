@@ -5,3 +5,4 @@
 
 ### Docker Katowice
 - 2015, October 13 — [Minimalist containers](http://go-talks.appspot.com/github.com/jgautheron/talks/2015/minimalist-containers/minimalist.slide#1)
+- 2016, January 23 — [Minimalist containers](http://go-talks.appspot.com/github.com/jgautheron/talks/2016/dockerize-todolist/todolist.slide#1)
