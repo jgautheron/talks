@@ -1,0 +1,593 @@
+Applied testing in GO
+20 March 2017
+Tags: testing, applied, go
+
+Adam Szpakowski
+SAP Hybris/YaaS
+adam@szpakowski.info
+
+* YaaS context
+
+.image img/yaas-containers-logo.svg
+
+: Present what YaaS is: platform, micro-services, heterogeneous environment, enterprise targeted with strong contracts
+
+* Agenda
+
+- TCO
+- patterns, tips and tricks
+- stack
+
+: Inform that this presentation is focused on practice with some more advanced concepts.
+: Point out that this is very brief review with only most crucial elements. Lots of useful info is omitted due to time limitation.
+
+* TCO
+
+* How tests influence TCO
+
+: Point out that TCO is important not only for business, but also for the team.
+: How we, as engineers, should always evaluate testing in the same way we are evaluating features.
+
+*increased*by*
+- solutions and structure which seem suboptimal
+- maintenance
+- extra dependencies
+- time to write
+
+*lowered*by*
+- dependencies awareness
+- refactoring freedom
+- more granularity
+- lower complexity
+- less code
+
+* Test harness dependencies
+
+- as costly as code dependencies
+- use standard testing framework
+- keep dependencies separate (unit vs integration)
+: TODO: add more info on practical side of impact od tests on TCO
+
+* Patterns when testing
+
+* Interfaces: single method
+
+*definition*
+
+        type HTTPDoer interface {
+            Do(req *http.Request) (*http.Response, error)
+        }
+
+*mock*
+
+        type HTTPClientMock struct {
+            mock.Mock
+        }
+
+        func (m *HTTPClientMock) Do(req *http.Request) (*http.Response, error) {
+            ...
+        }
+
+* test
+
+        func TestDoSuccess(t *testing.T) {
+            ...
+
+            httpClientMock := &client.HTTPClientMock{}
+            defer httpClientMock.AssertExpectations(t)
+
+            httpClientMock.On("Do", mock.Anything).Return(expResp, nil)
+
+            c := &client.Client{
+                HTTPClient:  httpClientMock,
+            }
+
+            resp, err := c.Do(expReq)
+
+            assert.NoError(t, err, "failed on doing request")
+            assertResponse(t, resp, expRespBody, expRespStatus)
+        }
+
+* interfaces: compose
+
+        type UserStorer interface {
+            UserSave(u *User) error
+            UserLoad(id string) (*User, error)
+            UserFindByName(name string) (*User, error)
+        }
+
+        type MsgStorer interface {
+            MsgSave(m *Message) error
+            MsgLoad(id string) (*Message, error)
+            MsgsIDsFindByTag(tag Tag) ([]string, error)
+        }
+
+        type Storer interface {
+            UserStorer
+            MsgStorer
+        }
+
+* user handler
+
+        type usersHandler struct {
+            Storer UserStorer
+        }
+
+        func (h *usersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+            ...
+            user := User{ ... }
+
+            err = h.Storer.UserSave(&user)
+        }
+
+* message handler
+
+        type messagesHandler struct {
+            Storer Storer
+        }
+
+        func (h *messagesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+            ...
+        	author, _ := h.Storer.UserFindByName(Author)
+
+            msg := Message{
+                AuthorID: author.ID,
+            }
+
+            h.Storer.MsgSave(&msg)
+        }
+
+* interfaces: general tips
+
+- define interfaces ONLY on consumer side
+- require as minimal interface as possible, declare new one if necessary
+- consume interface, produce implementation
+- constructors should return concrete implementation and NOT interfaces
+- use well-known interfaces when possible (e.g. io.Writer, io.Reader) but ...
+- ... limit coupling to non standard ones
+
+* Structure
+
+	service.go
+	service_test.go
+
+	worker.go
+	worker_test.go
+	worker_white_test.go
+
+	mock_test.go
+
+	export_test.go
+
+* export_test
+
+_code.go_
+
+        package dispatcher
+
+        type EventEnvelopeDeserializer interface {
+            Deserialize(string) (*block.EventEnvelopeModel, error)
+        }
+
+        type RedisPuller struct {
+            deserializer EventEnvelopeDeserializer
+        }
+
+_export__test.go_
+
+        package dispatcher
+
+        func RedisPullerWithDeserializer(u *RedisPuller, d EventEnvelopeDeserializer) *RedisPuller {
+            u.deserializer = d
+            return u
+        }
+
+* test
+
+        package dispatcher_test
+
+        t.Run("failure/Deserialization", func(t *testing.T) {
+            ...
+
+            mockDeserializer := EventDeserializerMock{}
+            defer mockDeserializer.AssertExpectations(t)
+            mockDeserializer.
+                On("Deserialize", fixEventEnvelopeSerNew()).
+                Return(nil, fixError())
+
+            puller := dispatcher.RedisPullerWithDeserializer(
+                newRedisPuller(mockRedisPool), &mockDeserializer)
+
+            ee, err := puller.Pull(fixCtx())
+
+            ...
+        })
+
+
+* Beware of time package
+
+*definition*
+
+        type NowProvider func() gTime.Time
+
+        func (m NowProvider) Now() gTime.Time {
+            if m == nil {
+                return gTime.Now()
+            }
+            return m()
+        }
+
+*use*default*
+
+        type HTTPPusher struct {
+            nowProvider yTime.NowProvider
+        }
+
+        func (p *HTTPPusher) Push(ctx context.Context, eventEnvelope *block.EventEnvelopeModel) error {
+            if eventEnvelope.Failures == 0 {
+                eventEnvelope.FirstDeliveryAttemptAt = p.nowProvider.Now()
+            }
+            ...
+        }
+
+* use fake
+
+        fixNow := func() gTime.Time { return gTime.Date(2020, 1, 1, 0, 6, 6, 6, gTime.UTC) }
+
+        t.Run("sideefects/FirstDeliveryAttemptAt/newEvent", func(t *testing.T) {
+            mockHTTPClient := &yClient.HTTPClientMock{}
+            defer mockHTTPClient.AssertExpectations(t)
+            mockHTTPClient.On("Do", mockAnyRequest).Return(fixResponse(http.StatusNoContent), nil).Once()
+
+            ee := fixEventEnvelopeNew()
+
+            newPusherWithTime(mockHTTPClient, fixNow).Push(context.Background(), ee)
+
+            assert.Equal(t, fixNow(), ee.FirstDeliveryAttemptAt)
+        })
+
+
+* progressing time
+
+*code*
+
+        type LoggedPusher struct {
+            underlying  Pusher
+            nowProvider yTime.NowProvider
+        }
+
+        func (lp *LoggedPusher) Push(ctx context.Context, eventEnvelope *block.EventEnvelopeModel) error {
+            timeStart := lp.nowProvider.Now()
+
+            f := logrus.Fields{ ... }
+
+            err := lp.underlying.Push(ctx, eventEnvelope)
+
+            f["durationNs"] = lp.nowProvider.Now().Sub(timeStart).Nanoseconds()
+
+            ...
+        }
+
+* test
+
+        package dispatcher_test
+        ...
+
+        t.Run(sym, func(t *testing.T) {
+            mockedUnderlying := &PusherMock{}
+            ...
+
+            fixTimePoints := make(chan time.Time, 2)
+            fixTimePoints <- time.Date(2023, 1, 1, 0, 0, 0, 7, time.UTC)
+            fixTimePoints <- time.Date(2023, 1, 1, 0, 0, 0, 7+99, time.UTC)
+            nowProvider := func() time.Time { return <-fixTimePoints }
+
+            loggedPusher := dispatcher.NewLoggedPusher(mockedUnderlying, logSink.Logger)
+            loggedPusher = dispatcher.LoggedPusherWithClock(loggedPusher, nowProvider)
+
+            err := loggedPusher.Push(fixCtx, fixIn())
+
+            ...
+        })
+
+* Split tests on dependencies
+
+        func (c *Client) GetValue(ctx context.Context, in *GetValueInput) (*GetValueOutput, error) {
+            if err := in.Validate(); err != nil {
+                return nil, errors.Wrap(err, "while validating input")
+            }
+
+            req, err := http.NewRequest(http.MethodGet, c.BaseURL+..., nil)
+            if err != nil {
+                return nil, errors.Wrap(err, "while creating HTTP request")
+            }
+
+            resp, err := c.Client.Do(req)                                           <------ dependency
+
+            if err != nil {
+                return nil, errors.Wrap(err, "while making HTTP call")
+            }
+
+            var respDecoded []struct { ... }
+
+            bodyRaw, err := ioutil.ReadAll(resp.Body)
+            if err != nil {
+                return nil, errors.Wrap(err, "while reading HTTP response body")
+            }
+            ...
+        }
+
+* Test resources usage: connection management
+
+        func(t *testing.T) {
+            ...
+            connLastState := make(map[string]http.ConnState)
+            mockHTTPService := &httptest.Server{
+                Config: &http.Server{
+                    Handler: stubHTTPHandler,
+                    ConnState: func(conn net.Conn, cs http.ConnState) {
+                        connLastState[conn.RemoteAddr().String()] = cs
+                    },
+                },
+            }
+            mockHTTPService.Start()
+            defer mockHTTPService.Close()
+
+            mockClient(tokenClientMock, &http.Client{}).
+                Do(fixRequest(t, http.MethodGet, mockHTTPService.URL, ""))
+
+            assertSingleConnectionIsRemainingNotClosed(t, connLastState)
+            if tc.shouldReuseConnection {
+                assertConnectionWasReused(t, connLastState)
+            }
+        }
+
+* Metrics and logging
+
+*positive*
+
+        t.Run("Should log returned errors with context field", func(t *testing.T) {
+            ...
+            logSink := spy.NewLogSink()
+
+            eventCreatorMock := &eventCreatorMock{}
+            eventCreatorMock.
+                On("Create", mock.Anything, blockID).
+                Return(initializer.CreateOutput{}, fixErr)
+
+            loggedCreator := initializer.NewLoggedEventCreator(eventCreatorMock, logSink.Logger)
+
+            loggedCreator.Create(fixCtx, blockID)
+
+            logSink.AssertLogged(t, logrus.ErrorLevel,
+                fmt.Sprintf("while processing block with id %s: %s", blockID, fixErr.Error()))
+
+            matched := logSink.AllEntriesMatches(ctxLoggedOnErrorLevel(fixCtx))
+            assert.True(t, matched, "context field not logged")
+        })
+
+* negative
+
+        t.Run("Should not log errors if process finished with success", func(t *testing.T) {
+            logSink := spy.NewLogSink()
+            logSink.RawLogger.Level = logrus.ErrorLevel
+
+            eventCreatorMock := &eventCreatorMock{}
+            eventCreatorMock.
+                On("Create", mock.Anything, blockID).
+                Return(initializer.CreateOutput{}, nil)
+
+            loggedCreator := initializer.NewLoggedEventCreator(eventCreatorMock, logSink.Logger)
+
+            loggedCreator.Create(context.Background(), blockID)
+
+            assert.Len(t, logSink.DumpAll(), 0)
+        })
+
+* Misc tips
+
+- table driven tests
+- testable examples
+- static code analysis
+- use sub-test/benchmarks
+- run tests multiple times especially with concurrent and/or network code
+- check for races
+
+* Generic tips influencing testing
+
+- functions and methods are different, use them both wisely - use method only if you change the struct state.
+- do not overuse constructors and aim for a structs which have sensible zero value
+- whitebox testing is lesser evil
+- functional options are great, but too heavy for code related dependencies injection
+
+* concurrent code
+
+- test vigorously
+- if you can't write test for concurrent code than the code is probably too complex, and will fail
+- simpler solution trumps more complicated
+
+* Stack
+
+* Testing stack
+
+- package level (unit)
+- app level (system)
+- external dependencies interaction (integration)
+- end-to-end testing (smokes, acceptance)
+- external contract (acceptance)
+
+* package level
+- white-box
+- black-box
+- integration with other packages
+- integration with external dependencies
+- regression / compatibility
+
+* package level: white-box (1/2)
+_app.go_
+
+        package app
+
+        MinimalApp struct {
+            registered []interface{}
+            ...
+        }
+
+        func (a *MinimalApp) Register(svc ShutdownableService) { ... }
+
+        func NewMinimalApp(cfg *Config) *MinimalApp {
+            return &MinimalApp{
+                ...
+            }
+        }
+
+* package level: white-box (2/2)
+_app__white__test.go_
+
+        package app
+
+        func TestMinimalApp_Register(t *testing.T) {
+            a := NewMinimalApp(&Config{})
+            s := &fakeService{}
+
+            a.Register(s)
+
+            assert.Equal(t, []interface{}{s}, a.registered)
+        }
+
+* package level: black-box
+_app__black__test.go_
+
+        package app_test
+
+        import "stash.hybris.com/gopher/go-sdk/app"
+
+        func TestMinimalApp_SignalTerm_Success(t *testing.T) {
+            for s, tc := range map[string]struct { sig syscall.Signal }{
+               "term": { syscall.SIGTERM },
+               "int":  { syscall.SIGINT },
+            } {
+                go func() {
+                    a := appSvc.NewMinimalApp(&appSvc.Config{...})
+                    assert.NoError(t, a.Run(), s)
+                }()
+
+                ...
+            }
+        }
+
+* package level: integration with other packages
+        func TestIntegrationHappyPath(t *testing.T) {
+            called := make(chan bool, 1)
+            mSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                w.WriteHeader(http.StatusOK)
+                called <- true
+            }))
+            defer mSrv.Close()
+
+            mClient := &tokenClientMock{}
+            mClient.On("Get", mockAnyContext).Return(fixToken, nil).Once()
+            defer mClient.AssertExpectations(t)
+
+            yClient := &yDepClient.Client{TokenClient: mClient, HTTPClient: &http.Client{}}
+
+            rsClient := &dep.Client{Client: yClient, BaseURL: mSrv.URL}
+
+            _, err := rsClient.GetMetricValue(context.Background(), &dep.GetMetricValueInput{
+                Metric: metric.Update{ ... },
+                Date: time.Date(2016, 4, 11, 11, 11, 11, 11, time.UTC),
+            })
+            assertIfCalled(t, called)
+            ...
+        }
+
+* package level: integration with external dependencies
+        func ExampleClient_Do_successSingle() {
+            tTokenSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                ... assert credentials and provide token
+            }))
+
+            tSvcSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                ... assert req body and headers, provide response
+            }))
+
+            c := &client.Client{
+                TokenClient: &client.CacheableTokenClient{
+                    HTTPClient:   &http.Client{},
+                    BaseURL:      tTokenSrv.URL,
+                    ...
+                },
+                HTTPClient: &http.Client{},
+            }
+
+            req, _ := http.NewRequest(http.MethodGet, tSvcSrv.URL, strings.NewReader(""))
+            resp, _ := c.Do(req)
+            ...
+        }
+
+* app level
+- main
+- modules initiation and interaction
+
+*container*based*
+
+- run locally
+- use of actual dependencies when possible
+- use fakes when no other way
+- use single test runner
+
+* docker-compose (1/2)
+        services:
+          tester:
+            container_name: it_metric_tester
+            depends_on:
+              - elasticmq
+              - redis
+              - riemann
+              - app
+
+          app:
+            container_name: it_metric_app
+            depends_on:
+              - redis
+              - riemann
+
+          redis:
+            container_name: it_metric_redis
+
+          riemann:
+            container_name: it_metric_riemann
+
+          elasticmq:
+            container_name: it_metric_elasticmq
+
+* docker-compose (2/2)
+
+        services:
+          tester:
+            container_name: it_metric_tester${HASH}
+            build: .
+            volumes:
+              - ${GOPATH}:/go
+            depends_on:
+              - elasticmq
+              - redis
+              - riemann
+              - app
+
+            environment:
+              REDIS_URI: redis:6379
+              REDIS_PASSWORD: SUPER_SECRET
+              APP_HEALTHCHECK_URL: http://app:8080
+              RIEMANN_HOST: riemann
+              RIEMANN_PORT: 5555
+
+            dns_search: docker.local
+
+* Hackin' Gliwice
+
+.image img/hackin-gliwice.png 530 _
+
+* Barcamp
+
+.image img/barcamp.png

@@ -1,21 +1,19 @@
 The way to Go
-Gophers Katowice #1, September 28, 2015
 
 Jonathan Gautheron
-Gopher at Nexway Lab
 @jgautheron
-jgautheron@neverblend.in
+jgautheron@nexway.com
 
 * About me
 
 Past and current works:
 
 - microservices
-- cli tools
 - gocha
-- unexport
-- go-boilerplates
-- gometalinter-ui
+- exago.io
+- usedexports
+- goconst
+- gogetimports
 
 .image http://golang.org/doc/gopher/gopherbw.png 200 _
 
